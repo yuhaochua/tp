@@ -5,6 +5,7 @@ import seedu.equipment.Equipment;
 import seedu.equipment.EquipmentType;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -14,11 +15,12 @@ import java.util.Locale;
 public class CheckCommand extends Command {
     private final ArrayList<String> commandStrings;
     public static final String COMMAND_WORD = "check";
-    public static final String COMMAND_DESCRIPTION = ": Gives details of the equipment with the specified name. "
+    public static final String COMMAND_DESCRIPTION = ": Check the details of the equipments that matches the specified"
+            + " parameter. "
             + System.lineSeparator()
-            + "Parameters: n/`ITEM_NAME`" + System.lineSeparator()
+            + "Parameters: parameter/`PARAMETER_VALUE`" + System.lineSeparator()
             + "Example: "
-            + "check n/`MixerC`";
+            + "check n/`MixerC` or check s/`SM57-1` or check t/`MICROPHONE`";
 
     /**
      * constructor for CheckCommand. Initialises successMessage and usageReminder from Command
@@ -37,8 +39,17 @@ public class CheckCommand extends Command {
      * @return CommandResult with message from execution of this command
      */
     public CommandResult execute() {
-        Pair<String, ?> checkPair = generateCheckPair();
-        ArrayList<Equipment> equipment = equipmentManager.checkEquipment(checkPair);
+        ArrayList<Equipment> equipment;
+        try {
+            Pair<String, ?> checkPair = generateCheckPair();
+            equipment = equipmentManager.checkEquipment(checkPair);
+        } catch (DateTimeParseException e) {
+            return new CommandResult(INVALID_DATE_MESSAGE);
+        } catch (NumberFormatException e) {
+            return new CommandResult(INCORRECT_COST_FORMAT);
+        } catch (IllegalArgumentException e) {
+            return new CommandResult(INCORRECT_ENUM_TYPE);
+        }
 
         return new CommandResult(String.format(successMessage, commandStrings.get(0)), equipment);
     }
@@ -48,8 +59,13 @@ public class CheckCommand extends Command {
      * Pair is a class that was implemented to match each attribute to its value.
      * By using pair, we are able to specify the attribute to be checked.
      * @return Pair of value to be checked and its matching attribute.
+     * @throws NumberFormatException if cost is invalid
+     * @throws IllegalArgumentException if EquipmentType is invalid
+     * @throws DateTimeParseException if date is not in YYYY-MM-DD format
+     *
      */
-    public Pair<String, ?> generateCheckPair() throws AssertionError, NumberFormatException, IllegalArgumentException {
+    public Pair<String, ?> generateCheckPair() throws AssertionError, NumberFormatException, IllegalArgumentException,
+        DateTimeParseException {
         Pair<String, ?> pair = null;
       
         String s = commandStrings.get(0);

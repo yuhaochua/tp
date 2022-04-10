@@ -37,7 +37,7 @@ public class DeleteCommand extends Command {
 
         try {
             serialNumber = prepareDelete();
-            equipmentName = equipmentManager.getEquipmentList().get(serialNumber).getItemName();
+            equipmentName = equipmentManager.getEquipmentList().get(serialNumber.toLowerCase()).getItemName();
         } catch (NullPointerException e) {
             return new CommandResult(INVALID_SERIAL_NUMBER);
         } catch (AssertionError e) {
@@ -61,7 +61,11 @@ public class DeleteCommand extends Command {
         return this.commandStrings.equals(otherDeleteCommand.commandStrings);
     }
 
-
+    /**
+     * Asserts that the argument value received is indeed a serial number and removes the '/' from the argument.
+     * @return String containing serial number of equipment to be deleted.
+     * @throws AssertionError if argument tag is not 's/'
+     */
     protected String prepareDelete() throws AssertionError {
         String argString = commandStrings.get(0);
         int delimiterPos = argString.indexOf('/');

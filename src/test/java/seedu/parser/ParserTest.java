@@ -7,6 +7,7 @@ import seedu.command.Command;
 import seedu.command.DeleteCommand;
 import seedu.command.IncorrectCommand;
 import seedu.command.ListCommand;
+import seedu.command.UpdateCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +37,26 @@ class ParserTest {
                 "add n/`ITEM_NAME` s/`SERIAL_NUMBER` t/`TYPE` c/`COST` pf/`PURCHASED_FROM` "
                         + "pd/`PURCHASED_DATE`");
         assertEquals(expectedResult, actualResult);
-        assertEquals(expectedResult.get(0), actualResult.get(0));
-        assertEquals(expectedResult.get(1), actualResult.get(1));
+    }
+
+    @Test
+    void splitCommandTerm_listCommandOnly_success() throws IncompleteCommandException {
+        ArrayList<String> expectedResult = new ArrayList<>(
+                Arrays.asList("list", null)
+        );
+        ArrayList<String> actualResult = parser.splitCommandTerm(
+                "list");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void splitCommandTerm_listCommandExtraWordsRetained_success() throws IncompleteCommandException {
+        ArrayList<String> expectedResult = new ArrayList<>(
+                Arrays.asList("list", "t/`SPEAKER`")
+        );
+        ArrayList<String> actualResult = parser.splitCommandTerm(
+                "list t/`SPEAKER`");
+        assertEquals(expectedResult, actualResult);
     }
 
     @Test
@@ -53,86 +72,6 @@ class ParserTest {
             fail();
         } catch (IncompleteCommandException e) {
             assertEquals("Could not find space delimiter between command and arguments!", e.getMessage());
-        }
-    }
-
-    @Deprecated
-    @Disabled("extractArgument is a better replacement for prepareAdd")
-    @Test
-    void prepareAdd_addStringWithSpaces_success() throws IncompleteCommandException {
-        ArrayList<String> expectedResult = new ArrayList<>(
-                Arrays.asList("Speaker B", "S1404115ASF", "Speaker", "1000", "Loud Technologies", "2022-02-23")
-        );
-        ArrayList<String> actualResult = parser.prepareAdd(
-                "n/Speaker B s/S1404115ASF t/Speaker c/1000 pf/Loud Technologies pd/2022-02-23");
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Deprecated
-    @Disabled("extractArgument is a better replacement for prepareAdd")
-    @Test
-    void prepareAdd_insufficientArguments_exceptionThrown() {
-        ArrayList<String> unexpectedResult = new ArrayList<>(
-                Arrays.asList("Speaker B", "S1404115ASF", "1000", "Loud Technologies", "2022-02-23")
-        );
-        try {
-            ArrayList<String> actualResult = parser.prepareAdd(
-                    "n/Speaker B s/S1404115ASF c/1000 pf/Loud Technologies pd/2022-02-23");
-            assertEquals(unexpectedResult, actualResult);
-            fail();
-        } catch (IncompleteCommandException e) {
-            assertEquals("Add command values are incomplete or missing!", e.getMessage());
-        }
-    }
-
-    @Deprecated
-    @Disabled("extractArgument is a better replacement for prepareAdd")
-    @Test
-    void prepareAdd_argumentEnteredTwice_exceptionThrown() {
-        ArrayList<String> unexpectedResult = new ArrayList<>(
-                Arrays.asList("Speaker B", "S1404115ASF", "Speaker", "1000 c/1000", "Loud Technologies", "2022-02-23")
-        );
-        try {
-            ArrayList<String> actualResult = parser.prepareAdd(
-                    "n/Speaker B s/S1404115ASF t/Speaker c/1000 c/1000 pf/Loud Technologies pd/2022-02-23");
-            assertEquals(unexpectedResult, actualResult);
-            fail();
-        } catch (IncompleteCommandException e) {
-            assertEquals("Use of '/' for purposes other than delimiter is forbidden!", e.getMessage());
-        }
-    }
-
-    @Deprecated
-    @Disabled("extractArgument is a better replacement for prepareAdd")
-    @Test
-    void prepareAdd_argumentIncludesSlashA_exceptionThrown() {
-        ArrayList<String> unexpectedResult = new ArrayList<>(
-                Arrays.asList("Speaker B", "S1404115/ASF", "Speaker", "1000", "Loud Technologies", "2022-02-23")
-        );
-        try {
-            ArrayList<String> actualResult = parser.prepareAdd(
-                    "n/Speaker B s/S1404115/ASF t/Speaker c/1000 pf/Loud Technologies pd/2022-02-23");
-            assertEquals(unexpectedResult, actualResult);
-            fail();
-        } catch (IncompleteCommandException e) {
-            assertEquals("Use of '/' for purposes other than delimiter is forbidden!", e.getMessage());
-        }
-    }
-
-    @Deprecated
-    @Disabled("extractArgument is a better replacement for prepareAdd")
-    @Test
-    void prepareAdd_argumentIncludesSlashB_exceptionThrown() {
-        ArrayList<String> unexpectedResult = new ArrayList<>(
-                Arrays.asList("Speaker B", "S1404115", "t/SF t/Speaker", "1000", "Loud Technologies", "2022-02-23")
-        );
-        try {
-            ArrayList<String> actualResult = parser.prepareAdd(
-                    "n/Speaker B s/S1404115t/SF t/Speaker c/1000 pf/Loud Technologies pd/2022-02-23");
-            assertEquals(unexpectedResult, actualResult);
-            fail();
-        } catch (IncompleteCommandException e) {
-            assertEquals("Use of '/' for purposes other than delimiter is forbidden!", e.getMessage());
         }
     }
 
@@ -241,72 +180,6 @@ class ParserTest {
         }
     }
 
-    @Disabled
-    @Test
-    void extractArguments_validCommands_success() throws IncompleteCommandException {
-        ArrayList<String> testStrings = new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF n/Speaker B t/Speaker c/1000 pf/Loud Technologies pd/2022-02-23",
-                "s/S1404115ASF     c/1000.3",
-                "s/S1404115ASF n/Speaker B        ",
-                "s/S1404115ASF pf/Loud Technologies n/Speaker B",
-                "t/Speaker s/S1404115ASF",
-                "c/1000 pf/Loud Technologies s/S1404115ASF"
-        ));
-        ArrayList<ArrayList<String>> expectedResults = new ArrayList<>();
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "n/Speaker B", "t/SPEAKER", "c/1000", "pf/Loud Technologies", "pd/2022-02-23")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "c/1000.3")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "n/Speaker B")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "pf/Loud Technologies", "n/Speaker B")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "t/SPEAKER", "s/S1404115ASF")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "c/1000", "pf/Loud Technologies", "s/S1404115ASF")));
-        for (int i = 0; i < expectedResults.size(); i++) {
-            ArrayList<String> testResultsSorted = parser.extractArguments(testStrings.get(i));
-            ArrayList<String> expectedResultsSorted = expectedResults.get(i);
-            testResultsSorted.sort(Comparator.comparing(String::toString));
-            expectedResultsSorted.sort(Comparator.comparing(String::toString));
-            assertEquals(expectedResultsSorted, testResultsSorted);
-        }
-    }
-
-    @Disabled
-    @Test
-    void extractArguments_mixedCaseText_success() throws IncompleteCommandException {
-        ArrayList<String> testStrings = new ArrayList<>(Arrays.asList(
-                "S/S1404115ASF n/Speaker B t/Speaker c/1000 Pf/Loud Technologies PD/2022-02-23",
-                "s/S1404115ASF     C/1000",
-                "s/S1404115ASF N/Speaker B        ",
-                "s/S1404115ASF pf/Loud Technologies n/Speaker B",
-                "t/Speaker S/S1404115ASF",
-                "c/1000 pF/Loud Technologies s/S1404115ASF"
-        ));
-        ArrayList<ArrayList<String>> expectedResults = new ArrayList<>();
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "n/Speaker B", "t/SPEAKER", "c/1000", "pf/Loud Technologies", "pd/2022-02-23")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "c/1000")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "n/Speaker B")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "s/S1404115ASF", "pf/Loud Technologies", "n/Speaker B")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "t/SPEAKER", "s/S1404115ASF")));
-        expectedResults.add(new ArrayList<>(Arrays.asList(
-                "c/1000", "pf/Loud Technologies", "s/S1404115ASF")));
-        for (int i = 0; i < expectedResults.size(); i++) {
-            ArrayList<String> testResultsSorted = parser.extractArguments(testStrings.get(i));
-            ArrayList<String> expectedResultsSorted = expectedResults.get(i);
-            testResultsSorted.sort(Comparator.comparing(String::toString));
-            expectedResultsSorted.sort(Comparator.comparing(String::toString));
-            assertEquals(expectedResultsSorted, testResultsSorted);
-        }
-    }
-
     @Test
     void extractArguments_noSpaceBeforeTypeSlashDelimiterFound_exceptionThrown() {
         ArrayList<String> expectedResult = new ArrayList<>(Arrays.asList(
@@ -331,17 +204,19 @@ class ParserTest {
     }
 
     @Test
-    void extractArguments_wrongArgTypesUsed_exceptionThrown() {
-        Throwable exception = assertThrows(IncompleteCommandException.class, () -> parser.extractArguments(
-                "x/`Speaker B` a/`Speaker` b/`1000` d/`Loud Technologies` e/`2022-02-23`"));
-        assertEquals(IncompleteCommandException.NO_PARAMETERS_FOUND, exception.getMessage());
+    void extractArguments_wrongArgTypesIgnored_success() throws IncompleteCommandException {
+        ArrayList<String> actualResult = parser.extractArguments("s/`S1404115ASF` rand/`SpeakerC` "
+                + "c/`2510` name/`blahblah` pd/`2022-08-21`");
+        ArrayList<String> expectedResult = new ArrayList<>(Arrays.asList("s/S1404115ASF",
+                "c/2510", "pd/2022-08-21"));
+        assertEquals(actualResult, expectedResult);
     }
 
     @Test
-    void parseCommand_listEnumTypeConvertedToUpper_success() {
-        Command testCommand = parser.parseCommand("list spEAker");
-        Command expectedCommand = new ListCommand(new ArrayList<>(Collections.singleton("SPEAKER")));
-        assertEquals(expectedCommand, testCommand);
+    void extractArguments_noCorrectArgTypes_exceptionThrown() {
+        Throwable exception = assertThrows(IncompleteCommandException.class, () -> parser.extractArguments(
+                "x/`Speaker B` a/`Speaker` b/`1000` d/`Loud Technologies` e/`2022-02-23`"));
+        assertEquals(IncompleteCommandException.NO_PARAMETERS_FOUND, exception.getMessage());
     }
 
     @Test
@@ -359,10 +234,18 @@ class ParserTest {
     }
 
     @Test
-    void parseCommand_deleteCommand_wrongArgType_exceptionThrown() {
+    void parseCommand_deleteCommandWrongArgType_exceptionCaught() {
         Command expectedCommand = new IncorrectCommand(DeleteCommand.COMMAND_WORD
                 + DeleteCommand.COMMAND_DESCRIPTION);
-        Command testCommand = parser.parseCommand("delete x/S1234567E");
+        Command testCommand = parser.parseCommand("delete x/`S1234567E`");
+        assertEquals(expectedCommand, testCommand);
+    }
+
+    @Test
+    void parseCommand_updateCommandIncorrectDateFormat_exceptionCaught() {
+        Command expectedCommand = new IncorrectCommand(UpdateCommand.COMMAND_WORD
+                + UpdateCommand.COMMAND_DESCRIPTION);
+        Command testCommand = parser.parseCommand("update s/`S1234567E` pd `2022-13-23`");
         assertEquals(expectedCommand, testCommand);
     }
 

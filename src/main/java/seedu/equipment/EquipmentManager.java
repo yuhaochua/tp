@@ -5,6 +5,7 @@ import seedu.Pair;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class EquipmentManager {
     private final HashMap<String, Equipment> equipmentList;
@@ -26,10 +27,10 @@ public class EquipmentManager {
      */
     public void addEquipment(String itemName, String serialNumber, EquipmentType type, double cost,
                              String purchasedFrom, LocalDate purchasedDate) throws DuplicateSerialNumberException {
-        if (!equipmentList.containsKey(serialNumber)) {
+        if (!equipmentList.containsKey(serialNumber.toLowerCase())) {
             Equipment equipment = new Equipment(itemName, serialNumber, type, cost, purchasedFrom, purchasedDate);
-            equipmentList.put(serialNumber, equipment);
-        } else if (equipmentList.containsKey(serialNumber)) {
+            equipmentList.put(serialNumber.toLowerCase(), equipment);
+        } else if (equipmentList.containsKey(serialNumber.toLowerCase())) {
             throw new DuplicateSerialNumberException();
         }
     }
@@ -42,8 +43,8 @@ public class EquipmentManager {
      */
     public void addEquipment(Equipment equipment) throws DuplicateSerialNumberException {
         String serialNumber = equipment.getSerialNumber();
-        if (!equipmentList.containsKey(serialNumber)) {
-            equipmentList.putIfAbsent(equipment.getSerialNumber(), equipment);
+        if (!equipmentList.containsKey(serialNumber.toLowerCase())) {
+            equipmentList.putIfAbsent(equipment.getSerialNumber().toLowerCase(), equipment);
         } else {
             throw new DuplicateSerialNumberException();
         }
@@ -67,11 +68,8 @@ public class EquipmentManager {
             }
             break;
         case "serialNumber":
-            for (Equipment equipment : equipmentList.values()) {
-                if (equipment.getSerialNumber().contains((String) checkParam.getValue())) {
-                    listOfEquipments.add(equipment);
-                }
-            }
+            String serialNumber = (String) checkParam.getValue();
+            listOfEquipments.add(equipmentList.get(serialNumber.toLowerCase()));
             break;
         case "type":
             for (Equipment equipment : equipmentList.values()) {
@@ -116,22 +114,6 @@ public class EquipmentManager {
         return new ArrayList<>(equipmentList.values());
     }
 
-    /**
-     * Creates an ArrayList of all Equipment with the specified EquipmentType.
-     *
-     * @param type Type of equipment in EquipmentType enum.
-     * @return An ArrayList of Equipment Objects with the specified type in equipmentList.
-     */
-    public ArrayList<Equipment> listEquipment(EquipmentType type) {
-        ArrayList<Equipment> listOfEquipments = new ArrayList<>();
-        for (Equipment equipment : equipmentList.values()) {
-            if (equipment.getType().equals(type)) {
-                listOfEquipments.add(equipment);
-            }
-        }
-        return listOfEquipments;
-    }
-
     public HashMap<String, Equipment> getEquipmentList() {
         return equipmentList;
     }
@@ -146,10 +128,10 @@ public class EquipmentManager {
      * @return Boolean value based on whether the update succeeded or not.
      */
     public boolean updateEquipment(String serialNumber, ArrayList<Pair<String, ?>> updatePairs) {
-        if (!equipmentList.containsKey(serialNumber)) {
+        if (!equipmentList.containsKey(serialNumber.toLowerCase())) {
             return false;
         }
-        Equipment updatedEquipment = equipmentList.get(serialNumber);
+        Equipment updatedEquipment = equipmentList.get(serialNumber.toLowerCase());
         for (Pair<String, ?> updates : updatePairs) {
             String key = updates.getKey();
             switch (key) {
@@ -185,6 +167,6 @@ public class EquipmentManager {
      * @param serialNumber Serial number of Equipment in String.
      */
     public void deleteEquipment(String serialNumber) {
-        equipmentList.remove(serialNumber);
+        equipmentList.remove(serialNumber.toLowerCase());
     }
 }
